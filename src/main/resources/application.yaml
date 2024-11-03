@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: my-todo-app
+  profiles:
+    active: spring
+  datasource:
+    url: jdbc:postgresql://localhost:5432/task
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cache:
+    type: redis
+
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+    user: postgres
+    password: postgres
+    out-of-order: true
+
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      enabled: true
+    info:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /doc
