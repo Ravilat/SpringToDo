@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/task
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  cache:
+    type: redis
+
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+    user: postgres
+    password: postgres
+    out-of-order: true
+
+
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      enabled: true
+    info:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /doc
