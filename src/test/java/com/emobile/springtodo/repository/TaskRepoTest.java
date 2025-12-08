@@ -23,6 +23,10 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @DataJpaTest
 @Import(TaskRepo.class)
 @Testcontainers

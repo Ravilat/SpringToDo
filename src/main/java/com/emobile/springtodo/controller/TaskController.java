@@ -12,9 +12,12 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @RestController
 public class TaskController implements TaskApiDocs {
 
@@ -35,16 +38,26 @@ public class TaskController implements TaskApiDocs {
     @Override
     @Cacheable(value = "tasksAll", key = "{#status, #priority, #created, #due, #page, #size}")
     public List<TaskResponseDTO> getAllTasks(
-            String status,
-            Integer priority,
-            LocalDate created,
-            LocalDate due,
+            TaskFilter taskFilter,
             int page,
             int size
     ) {
-        TaskFilter filter = new TaskFilter(status, priority, created, due);
-        return taskService.getAllTasks(filter, page, size);
+        return taskService.getAllTasks(taskFilter, page, size);
     }
+
+//    @Override
+//    @Cacheable(value = "tasksAll", key = "{#status, #priority, #created, #due, #page, #size}")
+//    public List<TaskResponseDTO> getAllTasks(
+//            String status,
+//            Integer priority,
+//            LocalDate created,
+//            LocalDate due,
+//            int page,
+//            int size
+//    ) {
+//        TaskFilter filter = new TaskFilter(status, priority, created, due);
+//        return taskService.getAllTasks(filter, page, size);
+//    }
 
     @Override
     @CacheEvict(value = "tasksAll", allEntries = true)

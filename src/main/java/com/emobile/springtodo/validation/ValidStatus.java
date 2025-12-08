@@ -5,6 +5,10 @@ import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @Documented
 @Constraint(validatedBy = StatusValidator.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER})

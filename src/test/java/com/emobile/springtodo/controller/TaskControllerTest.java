@@ -33,6 +33,10 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
@@ -175,6 +179,8 @@ class TaskControllerTest {
                 "\"error\":\"Task not found\"," +
                 "\"message\":\"Wrong task id\"" +
                 "}";
+
+
         JSONAssert.assertEquals(expected, actual, false);
     }
 
@@ -285,7 +291,11 @@ class TaskControllerTest {
 
         String actual = mvcResult.getResponse().getContentAsString();
 
-        String expected = "{\"priority\":\"Max value = 5\"}";
+        String expected = "{\"message\":\"validation error\"," +
+                "\"errors\":" +
+                "[{\"field\":\"priority\"," +
+                "\"message\":\"Max value = 5\"}]}";
+
         JSONAssert.assertEquals(expected, actual, false);
 
     }
@@ -345,7 +355,10 @@ class TaskControllerTest {
 
         String actual = mvcResult.getResponse().getContentAsString();
 
-        String expected = "{\"title\":\"title must be shorter than 20 characters\"}";
+        String expected = "{\"message\":\"validation error\"," +
+                "\"errors\":" +
+                "[{\"field\":\"title\"," +
+                "\"message\":\"title must be shorter than 20 characters\"}]}";
 
         JSONAssert.assertEquals(expected, actual, false);
     }

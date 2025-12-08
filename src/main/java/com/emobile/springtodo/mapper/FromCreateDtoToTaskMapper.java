@@ -10,6 +10,10 @@ import org.mapstruct.MappingTarget;
 
 import java.time.LocalDate;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @Mapper(componentModel = "spring")
 public interface FromCreateDtoToTaskMapper {
 

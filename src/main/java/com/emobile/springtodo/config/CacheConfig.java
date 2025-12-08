@@ -9,6 +9,10 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import java.time.Duration;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @Configuration
 public class CacheConfig {
 

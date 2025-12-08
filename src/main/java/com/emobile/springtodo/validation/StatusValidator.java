@@ -5,6 +5,10 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.Set;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 public class StatusValidator implements ConstraintValidator<ValidStatus, String> {
 
     private final Set<String> roles = Set.of("NEW", "IN_PROGRESS", "COMPLETED", "DELETED", "CANCELLED");

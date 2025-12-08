@@ -7,6 +7,10 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

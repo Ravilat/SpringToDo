@@ -5,6 +5,10 @@ import com.emobile.springtodo.entity.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @Mapper(componentModel = "spring")
 public interface FromTaskToResponseCreateDtoMapper {
 

@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @Repository
 public class TaskRepo {
 

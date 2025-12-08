@@ -5,6 +5,10 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

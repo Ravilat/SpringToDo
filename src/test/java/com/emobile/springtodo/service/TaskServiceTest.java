@@ -32,6 +32,10 @@ import static com.emobile.springtodo.TestConstants.task1;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Ravil Sultanov
+ * @since 08.12.2025
+ */
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
 
