@@ -25,6 +25,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -66,12 +67,12 @@ class TaskControllerTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:16.0");
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16.0"));
 
     @Container
     @ServiceConnection
     public static GenericContainer<?> redisContainer =
-            new GenericContainer<>("redis:latest")
+            new GenericContainer<>(DockerImageName.parse("redis:7.2.0"))
                     .withExposedPorts(6379);
 
     @BeforeEach
