@@ -3,7 +3,6 @@ package com.emobile.springtodo.repository;
 import com.emobile.springtodo.TestConstants;
 import com.emobile.springtodo.entity.Status;
 import com.emobile.springtodo.entity.Task;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +11,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -40,18 +37,9 @@ class TaskRepoTest {
     @Autowired
     TaskRepo taskRepo;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @BeforeEach
-    void cleanDb() {
-        jdbcTemplate.execute("TRUNCATE TABLE tasks RESTART IDENTITY CASCADE");
-    }
-
     @Container
     @ServiceConnection
     static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16.0"));
-
 
     @Test
     @DisplayName("Сохранение и получение задачи - успешно")
@@ -74,8 +62,6 @@ class TaskRepoTest {
         assertThrows(EmptyResultDataAccessException.class, () -> taskRepo.getTask(33L));
     }
 
-
-
     @Test
     @DisplayName("Получение задач - успешно")
     void getAllTasks() {
@@ -90,32 +76,23 @@ class TaskRepoTest {
         assertEquals(2, result1.size());
         assertEquals(TestConstants.task2.getTitle(), result1.get(0).getTitle());
         assertEquals(TestConstants.task1.getTitle(), result1.get(1).getTitle());
-
-//        Map<String, Object> params2 = new HashMap<>();
-//        params2.put("status", "NEW");
-//        params2.put("limit", 2);
-//        params2.put("offset", 0);
-//        List<Task> result2 = taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params2);
-//        assertDoesNotThrow(() -> taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params2));
-//        assertEquals(1, result2.size());
-//        assertEquals(TestConstants.task1.getTitle(), result2.get(0).getTitle());
     }
 
-//    @Test
-//    @DisplayName("Получение задач - успешно")
-//    void getAllTasks2() {
-//        taskRepo.createTask(TestConstants.task1);
-//        taskRepo.createTask(TestConstants.taskCompleted);
-//
-//        Map<String, Object> params2 = new HashMap<>();
-//        params2.put("status", "NEW");
-//        params2.put("limit", 2);
-//        params2.put("offset", 0);
-//        List<Task> result2 = taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params2);
-//        assertDoesNotThrow(() -> taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params2));
-//        assertEquals(1, result2.size());
-//        assertEquals(TestConstants.task1.getTitle(), result2.get(0).getTitle());
-//    }
+    @Test
+    @DisplayName("Получение задач по статусу - успешно")
+    void getAllTasksByStatus() {
+        taskRepo.createTask(TestConstants.task2);
+        taskRepo.createTask(TestConstants.taskCompleted);
+
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("status", "NEW");
+        params2.put("limit", 2);
+        params2.put("offset", 0);
+        List<Task> result2 = taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params2);
+        assertDoesNotThrow(() -> taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params2));
+        assertEquals(1, result2.size());
+        assertEquals(TestConstants.task2.getTitle(), result2.get(0).getTitle());
+    }
 
 
     @Test
