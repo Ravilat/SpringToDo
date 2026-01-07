@@ -1,7 +1,6 @@
 stages:
   - build
   - test
-  - package
   - deploy
 
 variables:
@@ -11,6 +10,14 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   DOCKER_DRIVER: "overlay2"
   TESTCONTAINERS_RYUK_DISABLED: "true"
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
+
 
 services:
   - name: docker:25-dind
@@ -24,41 +31,14 @@ cache:
 build:
   stage: build
   image: maven:3.9.4-eclipse-temurin-17
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
-      when: always
-    - if: '$CI_COMMIT_TAG'
-      when: never
   script:
-    - mvn $MAVEN_CLI_OPTS clean compile
+    - mvn $MAVEN_CLI_OPTS package -DskipTests
 
 test:
   stage: test
   image: maven:3.9.4-eclipse-temurin-17
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
-      when: always
-    - if: '$CI_COMMIT_TAG'
-      when: never
   script:
     - mvn $MAVEN_CLI_OPTS test
-
-package:
-  stage: package
-  image: maven:3.9.4-eclipse-temurin-17
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
-      when: always
-    - if: '$CI_COMMIT_TAG'
-      when: never
-  script:
-    - mvn $MAVEN_CLI_OPTS package -Dmaven.test.skip=true
-  artifacts:
-    paths:
-      - target/*.jar
-    expire_in: 30 days
-  cache:
-    policy: pull
 
 docker_build:
   stage: deploy
