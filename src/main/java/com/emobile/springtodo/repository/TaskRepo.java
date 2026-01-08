@@ -25,9 +25,9 @@ public class TaskRepo {
     }
 
     public Task getTask(Long id) {
-        String SQL = "SELECT * FROM tasks WHERE id = ?";
+        String sql = "SELECT * FROM tasks WHERE id = ?";
 
-        return jdbcTemplate.queryForObject(SQL, (rs, rowNum) ->
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
                 new Task(
                         rs.getLong("id"),
                         rs.getString("title"),
@@ -39,9 +39,9 @@ public class TaskRepo {
                 ), id);
     }
 
-    public List<Task> getAllTasks(String SQL, Map<String, Object> params) {
+    public List<Task> getAllTasks(String sql, Map<String, Object> params) {
 
-        return namedParameterJdbcTemplate.query(SQL,
+        return namedParameterJdbcTemplate.query(sql,
                 params,
                 (rs, rowNum) -> new Task(
                         rs.getLong("id"),
@@ -55,9 +55,9 @@ public class TaskRepo {
     }
 
     public Long createTask(Task task) {
-        String SQL = "INSERT INTO tasks (title, description, status, priority, created_at, due_date) " +
+        String sql = "INSERT INTO tasks (title, description, status, priority, created_at, due_date) " +
                 "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
-        return jdbcTemplate.queryForObject(SQL,
+        return jdbcTemplate.queryForObject(sql,
                 Long.class,
                 task.getTitle(),
                 task.getDescription(),
@@ -67,12 +67,12 @@ public class TaskRepo {
                 task.getDue());
     }
 
-    public int update(String SQL, Map<String, Object> params) {
-        return namedParameterJdbcTemplate.update(SQL, params);
+    public int update(String sql, Map<String, Object> params) {
+        return namedParameterJdbcTemplate.update(sql, params);
     }
 
     public int delete(Long taskId) {
-        String SQL = "DELETE FROM tasks WHERE id = ?";
-        return jdbcTemplate.update(SQL, taskId);
+        String sql = "DELETE FROM tasks WHERE id = ?";
+        return jdbcTemplate.update(sql, taskId);
     }
 }

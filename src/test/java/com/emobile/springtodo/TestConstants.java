@@ -49,12 +49,12 @@ public class TestConstants {
 
     public static List<Task> tasksOnlyTask1 = List.of(task1);
 
-    public static String SQL_SELECT_ALL = "SELECT * FROM tasks WHERE 1=1 ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+    public static final String SQL_SELECT_ALL = "SELECT * FROM tasks WHERE 1=1 ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
 
-    public static String SQL_SELECT_STATUS = "SELECT * FROM tasks WHERE 1=1 AND status = :status ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+    public static final String SQL_SELECT_STATUS = "SELECT * FROM tasks WHERE 1=1 AND status = :status ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
 
-    public static String SQL_UPDATE_STATUS = "UPDATE tasks SET status = :status WHERE id = :id";
+    public static final String SQL_UPDATE_STATUS = "UPDATE tasks SET status = :status WHERE id = :id";
 
-    public static String SQL_UPDATE_DEADLINE = "UPDATE tasks SET due_date = :due_date WHERE id = :id";
+    public static final String SQL_UPDATE_DEADLINE = "UPDATE tasks SET due_date = :due_date WHERE id = :id";
 
 }

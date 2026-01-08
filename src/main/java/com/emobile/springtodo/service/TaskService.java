@@ -34,14 +34,12 @@ public class TaskService {
     private final TaskRepo taskRepo;
     private final FromCreateDtoToTaskMapper fromCreateDtoToTaskMapper;
     private final FromTaskToResponseCreateDtoMapper fromTaskToResponseCreateDtoMapper;
-    private final MeterRegistry meterRegistry;
     private final Counter completedTaskCounter;
 
     public TaskService(TaskRepo taskRepo, FromCreateDtoToTaskMapper fromCreateDtoToTaskMapper, FromTaskToResponseCreateDtoMapper fromTaskToResponseCreateDtoMapper, MeterRegistry meterRegistry) {
         this.taskRepo = taskRepo;
         this.fromCreateDtoToTaskMapper = fromCreateDtoToTaskMapper;
         this.fromTaskToResponseCreateDtoMapper = fromTaskToResponseCreateDtoMapper;
-        this.meterRegistry = meterRegistry;
         this.completedTaskCounter = meterRegistry.counter("completed_tasks");
     }
 
@@ -63,30 +61,30 @@ public class TaskService {
 
         Map<String, Object> params = new HashMap<>();
 
-        StringBuilder SQL = new StringBuilder("SELECT * FROM tasks WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM tasks WHERE 1=1");
         if (taskFilter.getStatus() != null) {
-            SQL.append(" AND status = :status");
+            sql.append(" AND status = :status");
             params.put("status", taskFilter.getStatus());
         }
         if (taskFilter.getPriority() != null) {
-            SQL.append(" AND priority = :priority");
+            sql.append(" AND priority = :priority");
             params.put("priority", taskFilter.getPriority());
         }
         if (taskFilter.getCreated() != null) {
-            SQL.append(" AND created_at >= :created");
+            sql.append(" AND created_at >= :created");
             params.put("created", Date.valueOf(taskFilter.getCreated()));
         }
         if (taskFilter.getDue() != null) {
-            SQL.append(" AND due_date <= :due");
+            sql.append(" AND due_date <= :due");
             params.put("due", Date.valueOf(taskFilter.getDue()));
         }
-        SQL.append(" ORDER BY created_at DESC");
-        SQL.append(" LIMIT :limit OFFSET :offset");
+        sql.append(" ORDER BY created_at DESC");
+        sql.append(" LIMIT :limit OFFSET :offset");
 
         params.put("limit", size);
         params.put("offset", page * size);
 
-        List<Task> tasks = taskRepo.getAllTasks(SQL.toString(), params);
+        List<Task> tasks = taskRepo.getAllTasks(sql.toString(), params);
 
         return tasks.stream()
                 .map(fromTaskToResponseCreateDtoMapper::toDTO).toList();
@@ -116,20 +114,20 @@ public class TaskService {
 
         Map<String, Object> params = new HashMap<>();
 
-        StringBuilder SQL = new StringBuilder("UPDATE tasks SET ");
+        StringBuilder sql = new StringBuilder("UPDATE tasks SET ");
 
         if (updateTaskDTO.title() != null) {
-            SQL.append("title = :title, ");
+            sql.append("title = :title, ");
             params.put("title", updateTaskDTO.title());
             task.setTitle(updateTaskDTO.title());
         }
         if (updateTaskDTO.description() != null) {
-            SQL.append("description = :description, ");
+            sql.append("description = :description, ");
             params.put("description", updateTaskDTO.description());
             task.setDescription(updateTaskDTO.description());
         }
         if (updateTaskDTO.status() != null) {
-            SQL.append("status = :status, ");
+            sql.append("status = :status, ");
             params.put("status", updateTaskDTO.status());
             task.setStatus(Status.valueOf(updateTaskDTO.status()));
             if ("COMPLETED".equals(updateTaskDTO.status()) && !task.getStatus().equals(Status.COMPLETED)) {
@@ -137,12 +135,12 @@ public class TaskService {
             }
         }
         if (updateTaskDTO.priority() != null) {
-            SQL.append("priority = :priority, ");
+            sql.append("priority = :priority, ");
             params.put("priority", updateTaskDTO.priority());
             task.setPriority(updateTaskDTO.priority());
         }
         if (updateTaskDTO.dueDate() != null) {
-            SQL.append("due_date = :due_date, ");
+            sql.append("due_date = :due_date, ");
             LocalDate due = task.getCreated().plusDays(updateTaskDTO.dueDate());
             params.put("due_date", Date.valueOf(due));
             task.setDue(due);
@@ -151,11 +149,11 @@ public class TaskService {
         if (params.isEmpty()) {
             throw new TaskUpdateException("All parameters should not to be null");
         }
-        SQL.delete(SQL.length() - 2, SQL.length());
-        SQL.append(" WHERE id = :id");
+        sql.delete(sql.length() - 2, sql.length());
+        sql.append(" WHERE id = :id");
         params.put("id", Long.valueOf(taskId));
 
-        int update = taskRepo.update(SQL.toString(), params);
+        int update = taskRepo.update(sql.toString(), params);
         if (update == 0) {
             throw new TaskNotFoundException("Task not found");
         }

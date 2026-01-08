@@ -21,21 +21,21 @@ public class ExceptionHandlerController {
 
 
     @ExceptionHandler({TaskNotFoundException.class})
-    public ResponseEntity<?> onEntityNotFoundException(RuntimeException e) {
+    public ResponseEntity<ErrorSingleMessageDTO> onEntityNotFoundException(TaskNotFoundException e) {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorSingleMessageDTO("Task not found", e.getMessage()));
     }
 
     @ExceptionHandler({TaskUpdateException.class})
-    public ResponseEntity<?> updateParameterException(RuntimeException e) {
+    public ResponseEntity<ErrorSingleMessageDTO> updateParameterException(TaskUpdateException e) {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorSingleMessageDTO("Update parameter should not be null", e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ResponseExceptionDTO> handleValidationErrors(MethodArgumentNotValidException ex) {
 
         List<ErrorMultiplyMessageDTO> errorList = new ArrayList<>();
         ex.getBindingResult().getFieldErrors().forEach(

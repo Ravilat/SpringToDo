@@ -50,36 +50,6 @@ public interface TaskApiDocs {
             int size
     );
 
-//    @GetMapping("/tasks")
-//    @ResponseStatus(HttpStatus.OK)
-//    @Operation(summary = "Получение всех задач", description = "Сортировка по дате создания," +
-//            " возможна фильтрация " +
-//            " по статусу задачи (NEW, IN_PROGRESS, COMPLETED, DELETED, CANCELLED)," +
-//            " по приоритету, дате создания и дате дедлайна")
-//    List<TaskResponseDTO> getAllTasks(
-//            @RequestParam(required = false)
-//            @ValidStatus
-//            @Parameter(description = "Статус задачи (NEW, IN_PROGRESS, COMPLETED, DELETED, CANCELLED)")
-//            String status,
-//            @RequestParam(required = false)
-//            @Min(message = "Min value = 1", value = 1)
-//            @Max(message = "Max value = 5", value = 5)
-//            @Parameter(description = "Приоритет, от 1 до 5")
-//            Integer priority,
-//            @RequestParam(required = false)
-//            @Parameter(description = "Дата создания")
-//            LocalDate created,
-//            @RequestParam(required = false)
-//            @Parameter(description = "Дата дедлайна")
-//            LocalDate due,
-//            @RequestParam(defaultValue = "0")
-//            @Parameter(description = "Номер страницы (начиная с 0)")
-//            int page,
-//            @RequestParam(defaultValue = "20")
-//            @Parameter(description = "Количество записей на странице")
-//            int size
-//    );
-
 
     @PostMapping("/task")
     @ResponseStatus(HttpStatus.CREATED)

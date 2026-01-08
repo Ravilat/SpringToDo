@@ -50,7 +50,7 @@ class TaskControllerTest {
 
     private TaskResponseDTO expected1;
     private TaskResponseDTO expected2;
-    private List<TaskResponseDTO> expected;
+    private List<TaskResponseDTO> expectedList;
     private Task task1;
     private Task task2;
     private Long id1;
@@ -121,7 +121,7 @@ class TaskControllerTest {
                 .created(LocalDate.of(2025, 12, 3))
                 .due(LocalDate.of(2025, 12, 4))
                 .build();
-        expected = Arrays.asList(expected1, expected2);
+        expectedList = Arrays.asList(expected1, expected2);
     }
 
     @DisplayName("Запрос задачи по id  - успешно")
@@ -151,7 +151,7 @@ class TaskControllerTest {
 
     @Test
     @DisplayName("Запрос задачи по id - ошибка, задача не найдена")
-    public void getTask_should_return_not_found() throws Exception {
+    void getTask_should_return_not_found() throws Exception {
 
         MvcResult result = mockMvc.perform(get("/todo/task/33")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -168,7 +168,7 @@ class TaskControllerTest {
 
     @Test
     @DisplayName("Запрос задачи по id - ошибка, id не число")
-    public void getTask_should_return_wrong_taskId() throws Exception {
+    void getTask_should_return_wrong_taskId() throws Exception {
 
         MvcResult result = mockMvc.perform(get("/todo/task/xx")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -194,7 +194,7 @@ class TaskControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         String actual = result.getResponse().getContentAsString();
-        String expectedJson = objectMapper.writeValueAsString(expected);
+        String expectedJson = objectMapper.writeValueAsString(expectedList);
 
         JSONAssert.assertEquals(expectedJson, actual, false);
 
@@ -208,7 +208,7 @@ class TaskControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         String actualStatus = resultStatus.getResponse().getContentAsString();
-        String expectedJsonStatus = objectMapper.writeValueAsString(expected);
+        String expectedJsonStatus = objectMapper.writeValueAsString(expectedList);
 
         JSONAssert.assertEquals(expectedJsonStatus, actualStatus, false);
 
