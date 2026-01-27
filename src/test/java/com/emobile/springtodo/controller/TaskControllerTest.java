@@ -6,8 +6,8 @@ import com.emobile.springtodo.dto.output.TaskResponseDTO;
 import com.emobile.springtodo.entity.Status;
 import com.emobile.springtodo.entity.Task;
 import com.emobile.springtodo.exception.TaskNotFoundException;
-import com.emobile.springtodo.port.input.TaskUseCase;
 import com.emobile.springtodo.port.output.TaskOutputManager;
+import com.emobile.springtodo.service.TaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -46,8 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
         statements = "TRUNCATE TABLE public.tasks RESTART IDENTITY CASCADE")
-//@ActiveProfiles("jdbc")
-//@ActiveProfiles("hibernate")
 @ActiveProfiles("spring")
 class TaskControllerTest {
 
@@ -67,7 +65,7 @@ class TaskControllerTest {
     TaskOutputManager outputManager;
 
     @Autowired
-    private TaskUseCase entityUseCase;
+    private TaskService taskService;
 
     private ObjectMapper objectMapper;
 
@@ -97,20 +95,22 @@ class TaskControllerTest {
 
     @BeforeEach
     void initBase() {
-        task1 = new Task(
-                "Title1",
-                "descrip1",
-                Status.NEW,
-                1,
-                LocalDate.of(2024, 12, 2),
-                LocalDate.of(2024, 12, 3));
-        task2 = new Task(
-                "Title2",
-                "descrip2",
-                Status.NEW,
-                2,
-                LocalDate.of(2025, 12, 3),
-                LocalDate.of(2025, 12, 4));
+        task1 = new Task();
+        task1.setTitle("Title1");
+        task1.setDescription("descrip1");
+        task1.setStatus(Status.NEW);
+        task1.setPriority(1);
+        task1.setCreated(LocalDate.of(2024, 12, 2));
+        task1.setDue(LocalDate.of(2024, 12, 3));
+
+
+        task2 = new Task();
+        task2.setTitle("Title2");
+        task2.setDescription("descrip2");
+        task2.setStatus(Status.NEW);
+        task2.setPriority(2);
+        task2.setCreated( LocalDate.of(2025, 12, 3));
+        task2.setDue( LocalDate.of(2025, 12, 4));
 
         id1 = outputManager.createTask(task1);
         id2 = outputManager.createTask(task2);
@@ -437,7 +437,7 @@ class TaskControllerTest {
         mockMvc.perform(delete("/todo/task/1"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThrows(TaskNotFoundException.class, () -> entityUseCase.getTask("1"));
+        Assertions.assertThrows(TaskNotFoundException.class, () -> taskService.getTask("1"));
     }
 
     @Test
@@ -450,7 +450,7 @@ class TaskControllerTest {
         String actual = mvcResult.getResponse().getContentAsString();
         String expected = "{" +
                 "\"error\":\"Task not found\"," +
-                "\"message\":\"Task not found\"" +
+                "\"message\":\"Task was not deleted\"" +
                 "}";
         JSONAssert.assertEquals(expected, actual, false);
     }

@@ -1,6 +1,6 @@
 package com.emobile.springtodo.repository;
 
-import com.emobile.springtodo.entity.HibernateEntityTask;
+import com.emobile.springtodo.entity.Task;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -11,6 +11,5 @@ import org.springframework.stereotype.Repository;
  * @since 27.01.2026
  */
 @Repository
-@Profile("spring")
-public interface SpringTaskRepository extends JpaRepository<HibernateEntityTask, Long>, JpaSpecificationExecutor<HibernateEntityTask> {
+public interface SpringTaskRepository extends JpaRepository<Task, Long>, JpaSpecificationExecutor<Task> {
 }

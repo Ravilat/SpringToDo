@@ -1,6 +1,5 @@
 package com.emobile.springtodo.port.output;
 
-import com.emobile.springtodo.entity.HibernateEntityTask;
 import com.emobile.springtodo.entity.Task;
 
 import java.util.List;
@@ -17,7 +16,7 @@ public interface TaskOutputManager {
 
     Long createTask(Task task);
 
-    int update(Map<String, Object> params, HibernateEntityTask  task);
+    int update(Task  task);
 
     int delete(Long taskId);
 }

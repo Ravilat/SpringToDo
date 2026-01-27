@@ -12,40 +12,57 @@ import java.util.List;
  */
 public class TestConstants {
 
-    public static Task task1 = new Task(
-            "Title1",
-            "descrip1",
-            Status.NEW,
-            1,
-            LocalDate.of(2024, 12, 2),
-            LocalDate.of(2024, 12, 3));
+    public static Task task1;
+    public static Task task2;
+    public static Task task3;
+    public static Task taskCompleted;
+    public static Task taskWithId;
+    public static Task taskForGet;
 
-    public static Task task2 = new Task(
-            "Title2",
-            "descrip2",
-            Status.NEW,
-            2,
-            LocalDate.of(2025, 12, 1),
-//            LocalDate.of(2025, 12, 3),
-//            LocalDate.of(2025, 12, 4));
-            LocalDate.of(2025, 12, 6));
+    static {
+        task1 = new Task();
+        task1.setTitle("Title1");
+        task1.setDescription("descrip1");
+        task1.setStatus(Status.NEW);
+        task1.setPriority(1);
+        task1.setCreated(LocalDate.of(2024, 12, 2));
+        task1.setDue(LocalDate.of(2024, 12, 3));
 
-    public static Task taskCompleted = new Task(
-            "Title2",
-            "descrip2",
-            Status.COMPLETED,
-            2,
-            LocalDate.of(2025, 12, 3),
-            LocalDate.of(2025, 12, 4));
 
-    public static Task taskWithId = new Task(
-            1L,
-            "Title1",
-            "descrip1",
-            Status.NEW,
-            1,
-            LocalDate.of(2024, 12, 2),
-            LocalDate.of(2024, 12, 3));
+        task2 = new Task();
+        task2.setTitle("Title2");
+        task2.setDescription("descrip2");
+        task2.setStatus(Status.NEW);
+        task2.setPriority(2);
+        task2.setCreated(LocalDate.of(2025, 12, 1));
+        task2.setDue(LocalDate.of(2025, 12, 6));
+
+        taskCompleted = new Task();
+        taskCompleted.setTitle("Title2");
+        taskCompleted.setDescription("descrip2");
+        taskCompleted.setStatus(Status.COMPLETED);
+        taskCompleted.setPriority(2);
+        taskCompleted.setCreated(LocalDate.of(2025, 12, 3));
+        taskCompleted.setDue(LocalDate.of(2025, 12, 4));
+
+        taskWithId = new Task();
+        taskWithId.setId(1L);
+        taskWithId.setTitle("Title1");
+        taskWithId.setDescription("descrip1");
+        taskWithId.setStatus(Status.NEW);
+        taskWithId.setPriority(1);
+        taskWithId.setCreated(LocalDate.of(2024, 12, 2));
+        taskWithId.setDue(LocalDate.of(2024, 12, 3));
+
+        taskForGet = new Task();
+        taskForGet.setTitle("Title1");
+        taskForGet.setDescription("descrip1");
+        taskForGet.setStatus(Status.NEW);
+        taskForGet.setPriority(1);
+        taskForGet.setCreated(LocalDate.of(2024, 12, 2));
+        taskForGet.setDue(LocalDate.of(2024, 12, 3));
+    }
+
 
     public static List<Task> tasksList = List.of(task1, task2);
 

@@ -1,6 +1,6 @@
 package com.emobile.springtodo.repository;
 
-import com.emobile.springtodo.entity.HibernateEntityTask;
+import com.emobile.springtodo.entity.Task;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Date;
@@ -11,16 +11,16 @@ import java.util.Date;
  */
 public class TaskSpecifications {
 
-    public static Specification<HibernateEntityTask> hasStatus(String status) {
+    public static Specification<Task> hasStatus(String status) {
         return (root, query, criteriaBuilder) -> {
-            if (status == null || status.equals("")) {
+            if (status == null || status.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
             return criteriaBuilder.equal(root.get("status"), status);
         };
     }
 
-    public static Specification<HibernateEntityTask> hasPriority(Integer priority) {
+    public static Specification<Task> hasPriority(Integer priority) {
         return (root, query, criteriaBuilder) -> {
             if (priority == null || priority == 0) {
                 return criteriaBuilder.conjunction();
@@ -29,7 +29,7 @@ public class TaskSpecifications {
         };
     }
 
-    public static Specification<HibernateEntityTask> latestCreated(Date created) {
+    public static Specification<Task> latestCreated(Date created) {
         return (root, query, criteriaBuilder) -> {
             if (created == null) {
                 return criteriaBuilder.conjunction();
@@ -38,7 +38,7 @@ public class TaskSpecifications {
         };
     }
 
-    public static Specification<HibernateEntityTask> earlyDateDue(Date due) {
+    public static Specification<Task> earlyDateDue(Date due) {
         return (root, query, criteriaBuilder) -> {
             if (due == null) {
                 return criteriaBuilder.conjunction();

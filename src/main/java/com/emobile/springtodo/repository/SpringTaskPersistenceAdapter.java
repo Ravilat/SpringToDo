@@ -1,15 +1,12 @@
 package com.emobile.springtodo.repository;
 
-import com.emobile.springtodo.entity.HibernateEntityTask;
 import com.emobile.springtodo.entity.Task;
 import com.emobile.springtodo.exception.TaskNotFoundException;
-import com.emobile.springtodo.mapper.TaskEntityMapper;
 import com.emobile.springtodo.port.output.TaskOutputManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Sort;
 
 import java.util.Date;
 import java.util.List;
@@ -19,23 +16,18 @@ import java.util.Map;
  * @author Ravil Sultanov
  * @since 27.01.2026
  */
-//@Repository
 public class SpringTaskPersistenceAdapter implements TaskOutputManager {
 
     private final SpringTaskRepository springTaskRepository;
-    private final TaskEntityMapper taskEntityMapper;
 
-    public SpringTaskPersistenceAdapter(SpringTaskRepository springTaskRepository,
-                                        TaskEntityMapper taskEntityMapper) {
+    public SpringTaskPersistenceAdapter(SpringTaskRepository springTaskRepository) {
         this.springTaskRepository = springTaskRepository;
-        this.taskEntityMapper = taskEntityMapper;
     }
 
     @Override
     public Task getTask(Long id) {
-        HibernateEntityTask entityTask = springTaskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Задача не найдена"));
-        return taskEntityMapper.toTaskPojo(entityTask);
+        return springTaskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
     }
 
     @Override
@@ -48,30 +40,29 @@ public class SpringTaskPersistenceAdapter implements TaskOutputManager {
             size = params.get("size") == null ? 20 : (int) params.get("size");
             offset = params.get("offset") == null ? 0 : (int) params.get("offset");
             page = offset == 0 ? 0 : offset / size;
-            Pageable pageable = PageRequest.of(page, size);
+            Pageable pageable = PageRequest.of(page, size, Sort.by("created").descending());
 
-            Page<HibernateEntityTask> resultPage = springTaskRepository
+            Page<Task> resultPage = springTaskRepository
                     .findAll(TaskSpecifications.hasStatus((String) params.get("status"))
                                     .and(TaskSpecifications.hasPriority((Integer) params.get("priority")))
                                     .and(TaskSpecifications.latestCreated((Date) params.get("created")))
                                     .and(TaskSpecifications.earlyDateDue((Date) params.get("due")))
                             , pageable);
-            return resultPage.get().map(taskEntityMapper::toTaskPojo).toList();
+            return resultPage.get().toList();
         }
         return springTaskRepository.findAll(PageRequest.of(page, size))
                 .stream()
-                .map(taskEntityMapper::toTaskPojo)
                 .toList();
     }
 
     @Override
     public Long createTask(Task task) {
-        HibernateEntityTask save = springTaskRepository.save(taskEntityMapper.toEntity(task));
+        Task save = springTaskRepository.save(task);
         return save.getId();
     }
 
     @Override
-    public int update(Map<String, Object> params, HibernateEntityTask entityTask) {
+    public int update(Task entityTask) {
         try {
             springTaskRepository.save(entityTask);
             return 1;
@@ -82,7 +73,14 @@ public class SpringTaskPersistenceAdapter implements TaskOutputManager {
 
     @Override
     public int delete(Long taskId) {
-        springTaskRepository.deleteById(taskId);
-        return springTaskRepository.existsById(taskId) ? 1 : 0;
+        if (!springTaskRepository.existsById(taskId)) {
+            return 0;
+        }
+        try {
+            springTaskRepository.deleteById(taskId);
+            return 1;
+        } catch (IllegalArgumentException e) {
+            throw new TaskNotFoundException("Task not must be null");
+        }
     }
 }

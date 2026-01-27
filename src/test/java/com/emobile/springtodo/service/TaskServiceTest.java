@@ -5,7 +5,6 @@ import com.emobile.springtodo.dto.input.CreateTaskDto;
 import com.emobile.springtodo.dto.input.TaskFilter;
 import com.emobile.springtodo.dto.input.UpdateTaskDTO;
 import com.emobile.springtodo.dto.output.TaskResponseDTO;
-import com.emobile.springtodo.entity.HibernateEntityTask;
 import com.emobile.springtodo.entity.Status;
 import com.emobile.springtodo.entity.Task;
 import com.emobile.springtodo.exception.TaskNotFoundException;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.emobile.springtodo.TestConstants.task1;
+import static com.emobile.springtodo.TestConstants.taskForGet;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -58,8 +58,6 @@ class TaskServiceTest {
 
     FromUpdateTaskDtoToEntity fromUpdateTaskDtoToEntity = new FromUpdateTaskDtoToEntityImpl();
 
-    TaskEntityMapper taskEntityMapper = new TaskEntityMapperImpl();
-
     @BeforeEach
     void setUp() throws Exception {
         AutoCloseable autoCloseable = MockitoAnnotations.openMocks(this);
@@ -69,7 +67,6 @@ class TaskServiceTest {
                     fromCreateDtoToTaskMapper,
                     fromTaskToResponseCreateDtoMapper,
                     fromUpdateTaskDtoToEntity,
-                    taskEntityMapper,
                     meterRegistry);
         }
     }
@@ -78,7 +75,7 @@ class TaskServiceTest {
     @DisplayName("Получение задачи по id - успешно")
     void getTask() {
 
-        when(outputManager.getTask(1L)).thenReturn(task1);
+        when(outputManager.getTask(1L)).thenReturn(taskForGet);
         var actual = taskService.getTask("1");
         verify(outputManager, times(1)).getTask(1L);
         assertEquals("Title1", actual.getTitle());
@@ -103,7 +100,7 @@ class TaskServiceTest {
     @DisplayName("Получение списка задач без фильтра - успешно")
     void getAllTasksWithoutFilter() {
         Map<String, Object> params = new HashMap<>();
-        params.put("limit", 2);
+        params.put("size", 2);
         params.put("offset", 0);
         when(outputManager.getAllTasks(params)).thenReturn(TestConstants.tasksList);
 
@@ -121,7 +118,7 @@ class TaskServiceTest {
     void getAllTasksWithFilterWithStatus() {
         Map<String, Object> params = new HashMap<>();
         params.put("status", "NEW");
-        params.put("limit", 2);
+        params.put("size", 2);
         params.put("offset", 0);
         when(outputManager.getAllTasks(params)).thenReturn(TestConstants.tasksOnlyTask1);
 
@@ -131,15 +128,15 @@ class TaskServiceTest {
         List<TaskResponseDTO> actualList = taskService.getAllTasks(taskFilter, 0, 2);
 
         assertEquals(1, actualList.size());
-        assertEquals(TestConstants.tasksList.get(0).getTitle(), actualList.get(0).getTitle());
-        assertEquals(TestConstants.tasksList.get(0).getStatus().name(), actualList.get(0).getStatus());
+        assertEquals(TestConstants.tasksList.getFirst().getTitle(), actualList.getFirst().getTitle());
+        assertEquals(TestConstants.tasksList.getFirst().getStatus().name(), actualList.getFirst().getStatus());
     }
 
     @Test
     @DisplayName("Получение списка задач с пагинацией - успешно")
     void getAllTasksWithPagination() {
         Map<String, Object> params = new HashMap<>();
-        params.put("limit", 1);
+        params.put("size", 1);
         params.put("offset", 0);
         when(outputManager.getAllTasks(params)).thenReturn(TestConstants.tasksOnlyTask1);
 
@@ -148,14 +145,14 @@ class TaskServiceTest {
         List<TaskResponseDTO> actualList = taskService.getAllTasks(taskFilter, 0, 1);
 
         assertEquals(1, actualList.size());
-        assertEquals(TestConstants.tasksList.get(0).getTitle(), actualList.get(0).getTitle());
+        assertEquals(TestConstants.tasksList.getFirst().getTitle(), actualList.getFirst().getTitle());
     }
 
     @Test
     @DisplayName("Получение списка задач с пагинацией - успешно, результат пустой список")
     void getAllTasksWithPagination2() {
         Map<String, Object> params = new HashMap<>();
-        params.put("limit", 3);
+        params.put("size", 3);
         params.put("offset", 3);
         when(outputManager.getAllTasks(params)).thenReturn(List.of());
 
@@ -225,21 +222,16 @@ class TaskServiceTest {
                 .status("COMPLETED")
                 .build();
 
-        HibernateEntityTask entityTask = taskEntityMapper.toEntity(TestConstants.taskWithId);
+        Task entityTask = TestConstants.taskWithId;
         fromUpdateTaskDtoToEntity.updateEntityFromDto(updateTaskDTO, entityTask);
 
-        Map<String, Object> params1 = new HashMap<>();
-        params1.put("status", "COMPLETED");
-        params1.put("id", 1L);
-        when(outputManager.update(params1,entityTask)).thenReturn(1);
+        when(outputManager.update(entityTask)).thenReturn(1);
         when(outputManager.getTask(1L)).thenReturn(TestConstants.taskWithId);
-        doNothing().when(completedTaskCounter).increment();
-
 
         TaskResponseDTO update = taskService.update("1", updateTaskDTO);
         assertEquals(1, update.getTaskId());
         assertEquals("COMPLETED", update.getStatus());
-        verify(outputManager, times(1)).update(params1, entityTask);
+        verify(outputManager, times(1)).update(entityTask);
     }
 
     @Test
@@ -278,13 +270,10 @@ class TaskServiceTest {
                 .status("COMPLETED")
                 .build();
 
-        HibernateEntityTask entityTask = taskEntityMapper.toEntity(task1);
+        Task entityTask = task1;
         fromUpdateTaskDtoToEntity.updateEntityFromDto(updateTaskDTO, entityTask);
 
-        Map<String, Object> params1 = new HashMap<>();
-        params1.put("status", "COMPLETED");
-        params1.put("id", 1L);
-        when(outputManager.update(params1, entityTask)).thenReturn(0);
+        when(outputManager.update(entityTask)).thenReturn(0);
 
         assertThrows(TaskNotFoundException.class, () -> taskService.update("1", updateTaskDTO), "Task not found");
     }
