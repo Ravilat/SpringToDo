@@ -5,15 +5,14 @@ import com.emobile.springtodo.dto.input.CreateTaskDto;
 import com.emobile.springtodo.dto.input.TaskFilter;
 import com.emobile.springtodo.dto.input.UpdateTaskDTO;
 import com.emobile.springtodo.dto.output.TaskResponseDTO;
+import com.emobile.springtodo.entity.HibernateEntityTask;
 import com.emobile.springtodo.entity.Status;
 import com.emobile.springtodo.entity.Task;
 import com.emobile.springtodo.exception.TaskNotFoundException;
 import com.emobile.springtodo.exception.TaskUpdateException;
-import com.emobile.springtodo.mapper.FromCreateDtoToTaskMapper;
-import com.emobile.springtodo.mapper.FromCreateDtoToTaskMapperImpl;
-import com.emobile.springtodo.mapper.FromTaskToResponseCreateDtoMapper;
-import com.emobile.springtodo.mapper.FromTaskToResponseCreateDtoMapperImpl;
-import com.emobile.springtodo.repository.TaskRepo;
+import com.emobile.springtodo.mapper.*;
+import com.emobile.springtodo.port.output.TaskOutputManager;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,26 +39,38 @@ import static org.mockito.Mockito.*;
 class TaskServiceTest {
 
     @Mock
-    TaskRepo taskRepo;
+    TaskOutputManager outputManager;
 
     @Mock
     MeterRegistry meterRegistry;
 
+    @Mock
+    Counter completedTaskCounter;
+
     @Captor
     ArgumentCaptor<Task> taskCaptor;
 
-    @InjectMocks
     TaskService taskService;
 
     FromTaskToResponseCreateDtoMapper fromTaskToResponseCreateDtoMapper = new FromTaskToResponseCreateDtoMapperImpl();
 
     FromCreateDtoToTaskMapper fromCreateDtoToTaskMapper = new FromCreateDtoToTaskMapperImpl();
 
+    FromUpdateTaskDtoToEntity fromUpdateTaskDtoToEntity = new FromUpdateTaskDtoToEntityImpl();
+
+    TaskEntityMapper taskEntityMapper = new TaskEntityMapperImpl();
+
     @BeforeEach
     void setUp() throws Exception {
         AutoCloseable autoCloseable = MockitoAnnotations.openMocks(this);
+        when(meterRegistry.counter("completed_tasks")).thenReturn(completedTaskCounter);
         try (autoCloseable) {
-            taskService = new TaskService(taskRepo, fromCreateDtoToTaskMapper, fromTaskToResponseCreateDtoMapper, meterRegistry);
+            taskService = new TaskService(outputManager,
+                    fromCreateDtoToTaskMapper,
+                    fromTaskToResponseCreateDtoMapper,
+                    fromUpdateTaskDtoToEntity,
+                    taskEntityMapper,
+                    meterRegistry);
         }
     }
 
@@ -67,9 +78,9 @@ class TaskServiceTest {
     @DisplayName("Получение задачи по id - успешно")
     void getTask() {
 
-        when(taskRepo.getTask(1L)).thenReturn(task1);
+        when(outputManager.getTask(1L)).thenReturn(task1);
         var actual = taskService.getTask("1");
-        verify(taskRepo, times(1)).getTask(1L);
+        verify(outputManager, times(1)).getTask(1L);
         assertEquals("Title1", actual.getTitle());
         assertEquals("NEW", actual.getStatus());
         assertEquals(LocalDate.of(2024, 12, 2), actual.getCreated());
@@ -78,7 +89,7 @@ class TaskServiceTest {
     @Test
     @DisplayName("Получение задачи по id - задача не найдена")
     void getTask_TaskNotFound() {
-        when(taskRepo.getTask(1L)).thenThrow(EmptyResultDataAccessException.class);
+        when(outputManager.getTask(1L)).thenThrow(EmptyResultDataAccessException.class);
         assertThrows(TaskNotFoundException.class, () -> taskService.getTask("1"), "Task not found");
     }
 
@@ -94,7 +105,7 @@ class TaskServiceTest {
         Map<String, Object> params = new HashMap<>();
         params.put("limit", 2);
         params.put("offset", 0);
-        when(taskRepo.getAllTasks(TestConstants.SQL_SELECT_ALL, params)).thenReturn(TestConstants.tasksList);
+        when(outputManager.getAllTasks(params)).thenReturn(TestConstants.tasksList);
 
         TaskFilter taskFilter = TaskFilter.builder()
                 .build();
@@ -112,7 +123,7 @@ class TaskServiceTest {
         params.put("status", "NEW");
         params.put("limit", 2);
         params.put("offset", 0);
-        when(taskRepo.getAllTasks(TestConstants.SQL_SELECT_STATUS, params)).thenReturn(TestConstants.tasksOnlyTask1);
+        when(outputManager.getAllTasks(params)).thenReturn(TestConstants.tasksOnlyTask1);
 
         TaskFilter taskFilter = TaskFilter.builder()
                 .status("NEW")
@@ -130,7 +141,7 @@ class TaskServiceTest {
         Map<String, Object> params = new HashMap<>();
         params.put("limit", 1);
         params.put("offset", 0);
-        when(taskRepo.getAllTasks(TestConstants.SQL_SELECT_ALL, params)).thenReturn(TestConstants.tasksOnlyTask1);
+        when(outputManager.getAllTasks(params)).thenReturn(TestConstants.tasksOnlyTask1);
 
         TaskFilter taskFilter = TaskFilter.builder()
                 .build();
@@ -146,7 +157,7 @@ class TaskServiceTest {
         Map<String, Object> params = new HashMap<>();
         params.put("limit", 3);
         params.put("offset", 3);
-        when(taskRepo.getAllTasks(TestConstants.SQL_SELECT_ALL, params)).thenReturn(List.of());
+        when(outputManager.getAllTasks(params)).thenReturn(List.of());
 
         TaskFilter taskFilter = TaskFilter.builder()
                 .build();
@@ -166,7 +177,7 @@ class TaskServiceTest {
                 .dueDate(5)
                 .build();
 
-        when(taskRepo.createTask(argThat(t ->
+        when(outputManager.createTask(argThat(t ->
                 t.getTitle().equals("Title1")
                         && t.getDescription().equals("descrip1")
                         && t.getStatus().equals(Status.NEW)
@@ -191,7 +202,7 @@ class TaskServiceTest {
                 .dueDate(5)
                 .build();
 
-        when(taskRepo.createTask(argThat(t ->
+        when(outputManager.createTask(argThat(t ->
                 t.getTitle().equals("Title1")
                         && t.getDescription().equals("descrip1")
                         && t.getStatus().equals(Status.NEW)
@@ -210,26 +221,31 @@ class TaskServiceTest {
     @DisplayName("Изменение - успешно")
     void update() {
 
-        Map<String, Object> params1 = new HashMap<>();
-        params1.put("status", "COMPLETED");
-        params1.put("id", 1L);
-        when(taskRepo.update(TestConstants.SQL_UPDATE_STATUS, params1)).thenReturn(1);
-        when(taskRepo.getTask(1L)).thenReturn(TestConstants.taskWithId);
-
         UpdateTaskDTO updateTaskDTO = UpdateTaskDTO.builder()
                 .status("COMPLETED")
                 .build();
 
+        HibernateEntityTask entityTask = taskEntityMapper.toEntity(TestConstants.taskWithId);
+        fromUpdateTaskDtoToEntity.updateEntityFromDto(updateTaskDTO, entityTask);
+
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("status", "COMPLETED");
+        params1.put("id", 1L);
+        when(outputManager.update(params1,entityTask)).thenReturn(1);
+        when(outputManager.getTask(1L)).thenReturn(TestConstants.taskWithId);
+        doNothing().when(completedTaskCounter).increment();
+
+
         TaskResponseDTO update = taskService.update("1", updateTaskDTO);
         assertEquals(1, update.getTaskId());
         assertEquals("COMPLETED", update.getStatus());
-        verify(taskRepo, times(1)).update(TestConstants.SQL_UPDATE_STATUS, params1);
+        verify(outputManager, times(1)).update(params1, entityTask);
     }
 
     @Test
     @DisplayName("Изменение - не найдена задача")
     void updateNotFound() {
-        when(taskRepo.getTask(1L)).thenThrow(EmptyResultDataAccessException.class);
+        when(outputManager.getTask(1L)).thenThrow(EmptyResultDataAccessException.class);
         UpdateTaskDTO updateTaskDTO = UpdateTaskDTO.builder()
                 .status("COMPLETED")
                 .build();
@@ -249,20 +265,27 @@ class TaskServiceTest {
     @DisplayName("Изменение - нечего изменять")
     void updateTaskUpdateException() {
         UpdateTaskDTO updateTaskDTO = UpdateTaskDTO.builder().build();
+        when(outputManager.getTask(1L)).thenReturn(TestConstants.taskWithId);
         assertThrows(TaskUpdateException.class, () -> taskService.update("1", updateTaskDTO), "All parameters should not to be null");
     }
 
     @Test
     @DisplayName("Изменение - репозиторий не обновил ни одной строки")
     void updateNotFound2() {
-        when(taskRepo.getTask(1L)).thenReturn(task1);
-        Map<String, Object> params1 = new HashMap<>();
-        params1.put("status", "COMPLETED");
-        params1.put("id", 1L);
-        when(taskRepo.update(TestConstants.SQL_UPDATE_STATUS, params1)).thenReturn(0);
+        when(outputManager.getTask(1L)).thenReturn(task1);
+
         UpdateTaskDTO updateTaskDTO = UpdateTaskDTO.builder()
                 .status("COMPLETED")
                 .build();
+
+        HibernateEntityTask entityTask = taskEntityMapper.toEntity(task1);
+        fromUpdateTaskDtoToEntity.updateEntityFromDto(updateTaskDTO, entityTask);
+
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("status", "COMPLETED");
+        params1.put("id", 1L);
+        when(outputManager.update(params1, entityTask)).thenReturn(0);
+
         assertThrows(TaskNotFoundException.class, () -> taskService.update("1", updateTaskDTO), "Task not found");
     }
 
@@ -275,7 +298,7 @@ class TaskServiceTest {
     @Test
     @DisplayName("Удаление - нет записи")
     void deleteNotFound() {
-        when(taskRepo.delete(1L)).thenReturn(0);
+        when(outputManager.delete(1L)).thenReturn(0);
         assertThrows(TaskNotFoundException.class, () -> taskService.delete("1"));
     }
 }

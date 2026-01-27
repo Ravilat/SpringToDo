@@ -4,7 +4,7 @@ import com.emobile.springtodo.dto.input.CreateTaskDto;
 import com.emobile.springtodo.dto.input.TaskFilter;
 import com.emobile.springtodo.dto.input.UpdateTaskDTO;
 import com.emobile.springtodo.dto.output.TaskResponseDTO;
-import com.emobile.springtodo.service.TaskService;
+import com.emobile.springtodo.port.input.TaskUseCase;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -21,18 +21,18 @@ import java.util.List;
 @RestController
 public class TaskController implements TaskApiDocs {
 
-    private final TaskService taskService;
+    private final TaskUseCase entityUseCase;
     private final CacheManager cacheManager;
 
-    public TaskController(TaskService taskService, CacheManager cacheManager) {
-        this.taskService = taskService;
+    public TaskController(com.emobile.springtodo.service.TaskService entityUseCase, CacheManager cacheManager) {
+        this.entityUseCase = entityUseCase;
         this.cacheManager = cacheManager;
     }
 
     @Override
     @Cacheable(value = "tasks", key = "#taskId")
     public TaskResponseDTO getTask(String taskId) {
-        return taskService.getTask(taskId);
+        return entityUseCase.getTask(taskId);
     }
 
     @Override
@@ -42,13 +42,13 @@ public class TaskController implements TaskApiDocs {
             int page,
             int size
     ) {
-        return taskService.getAllTasks(taskFilter, page, size);
+        return entityUseCase.getAllTasks(taskFilter, page, size);
     }
 
     @Override
     @CacheEvict(value = "tasksAll", allEntries = true)
     public TaskResponseDTO createTask(CreateTaskDto task) {
-        TaskResponseDTO taskResponseDTO = taskService.create(task);
+        TaskResponseDTO taskResponseDTO = entityUseCase.create(task);
         cacheManager.getCache("tasks").put(taskResponseDTO.getTaskId(), taskResponseDTO);
         return taskResponseDTO;
     }
@@ -59,7 +59,7 @@ public class TaskController implements TaskApiDocs {
             evict = {@CacheEvict(value = "tasksAll", allEntries = true)}
     )
     public TaskResponseDTO updateTask(String taskId, UpdateTaskDTO task) {
-        return taskService.update(taskId, task);
+        return entityUseCase.update(taskId, task);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class TaskController implements TaskApiDocs {
 
     })
     public void deleteTask(String taskId) {
-        taskService.delete(taskId);
+        entityUseCase.delete(taskId);
     }
 
 }

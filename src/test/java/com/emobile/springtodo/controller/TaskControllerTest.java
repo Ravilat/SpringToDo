@@ -6,8 +6,8 @@ import com.emobile.springtodo.dto.output.TaskResponseDTO;
 import com.emobile.springtodo.entity.Status;
 import com.emobile.springtodo.entity.Task;
 import com.emobile.springtodo.exception.TaskNotFoundException;
-import com.emobile.springtodo.repository.TaskRepo;
-import com.emobile.springtodo.service.TaskService;
+import com.emobile.springtodo.port.input.TaskUseCase;
+import com.emobile.springtodo.port.output.TaskOutputManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -18,6 +18,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -43,6 +46,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
         statements = "TRUNCATE TABLE public.tasks RESTART IDENTITY CASCADE")
+//@ActiveProfiles("jdbc")
+//@ActiveProfiles("hibernate")
+@ActiveProfiles("spring")
 class TaskControllerTest {
 
     @Autowired
@@ -58,10 +64,10 @@ class TaskControllerTest {
 
 
     @Autowired
-    TaskRepo taskRepo;
+    TaskOutputManager outputManager;
 
     @Autowired
-    private TaskService taskService;
+    private TaskUseCase entityUseCase;
 
     private ObjectMapper objectMapper;
 
@@ -74,6 +80,13 @@ class TaskControllerTest {
     public static GenericContainer<?> redisContainer =
             new GenericContainer<>(DockerImageName.parse("redis:7.2.0"))
                     .withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
+        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
+    }
 
     @BeforeEach
     void setUp() {
@@ -99,8 +112,8 @@ class TaskControllerTest {
                 LocalDate.of(2025, 12, 3),
                 LocalDate.of(2025, 12, 4));
 
-        id1 = taskRepo.createTask(task1);
-        id2 = taskRepo.createTask(task2);
+        id1 = outputManager.createTask(task1);
+        id2 = outputManager.createTask(task2);
 
         expected1 = TaskResponseDTO.builder()
                 .taskId(id1)
@@ -424,7 +437,7 @@ class TaskControllerTest {
         mockMvc.perform(delete("/todo/task/1"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThrows(TaskNotFoundException.class, () -> taskService.getTask("1"));
+        Assertions.assertThrows(TaskNotFoundException.class, () -> entityUseCase.getTask("1"));
     }
 
     @Test

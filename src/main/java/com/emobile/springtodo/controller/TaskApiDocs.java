@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -44,9 +45,11 @@ public interface TaskApiDocs {
             TaskFilter taskFilter,
             @RequestParam(defaultValue = "0")
             @Parameter(description = "Номер страницы (начиная с 0)")
+            @Min(0)
             int page,
             @RequestParam(defaultValue = "20")
             @Parameter(description = "Количество записей на странице")
+            @Min(1)
             int size
     );
 

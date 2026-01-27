@@ -25,8 +25,10 @@ public class TestConstants {
             "descrip2",
             Status.NEW,
             2,
-            LocalDate.of(2025, 12, 3),
-            LocalDate.of(2025, 12, 4));
+            LocalDate.of(2025, 12, 1),
+//            LocalDate.of(2025, 12, 3),
+//            LocalDate.of(2025, 12, 4));
+            LocalDate.of(2025, 12, 6));
 
     public static Task taskCompleted = new Task(
             "Title2",
