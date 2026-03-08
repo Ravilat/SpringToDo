@@ -5,8 +5,8 @@ spring:
     active: spring
   datasource:
     url: jdbc:postgresql://localhost:5432/task
-    username: jira
-    password: admin
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
@@ -19,8 +19,8 @@ spring:
   flyway:
     baseline-on-migrate: true
     enabled: true
-    user: jira
-    password: admin
+    user: postgres
+    password: postgres
     out-of-order: true
 
 
