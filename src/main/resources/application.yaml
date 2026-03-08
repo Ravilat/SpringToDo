@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: my-todo-app
   profiles:
     active: spring
   datasource:
@@ -23,12 +25,15 @@ spring:
 
 
 management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
   server:
     port: 9090
   endpoints:
     web:
       exposure:
-        include: health, info, metrics
+        include: health, info, metrics, prometheus
   endpoint:
     health:
       enabled: true
