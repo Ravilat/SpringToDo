@@ -15,7 +15,8 @@ pipeline {
         }
         stage('Maven install'){
             steps{
-                sh 'maven clean install -Dspring.profiles.active=$SPRING_PROFILE'
+                sh 'chmod +x mvnw'
+                sh './mvnw clean install -Dspring.profiles.active=$SPRING_PROFILE'
             }
         }
         stage('Docker build and push') {
