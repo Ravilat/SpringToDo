@@ -15,6 +15,9 @@ pipeline {
             steps {
                 sh 'env'
                 echo "Текущая ветка из Git: ${env.GIT_BRANCH}"
+                echo "Имя ветки или PR: ${env.BRANCH_NAME}"
+                echo "Это PR? : ${env.CHANGE_ID ? 'Да, номер ' + env.CHANGE_ID : 'Нет'}"
+                echo "Целевая ветка PR (куда льем): ${env.CHANGE_TARGET ?: 'N/A'}"
             }
         }
         stage('github sign in'){
@@ -24,7 +27,7 @@ pipeline {
         }
         stage('Maven install'){
             when {
-                expression { return env.GIT_BRANCH == 'origin/dev' && env.CHANGE_ID != null}
+                 changeRequest()
             }
             steps{
                 sh 'chmod +x mvnw'
