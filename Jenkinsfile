@@ -6,6 +6,7 @@ pipeline {
     environment{
         DOCKER_IMAGE = "faritych8/SpringToDO"
         SPRING_PROFILE = "spring"
+        TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
     }
     stages {
         stage('github sign in'){
