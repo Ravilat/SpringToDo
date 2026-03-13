@@ -10,22 +10,26 @@ pipeline {
         TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
     }
     stages {
-//         stage('Debug Info') {
-//             steps {
-//                 sh 'env'
-//                 echo "Текущая ветка из Git: ${env.GIT_BRANCH}"
-//             }
-//         }
+        stage('Debug Info') {
+            steps {
+                sh 'env'
+                echo "Текущая ветка из Git: ${env.GIT_BRANCH}"
+            }
+        }
         stage('github sign in'){
             steps{
                 git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
             }
         }
         stage('Maven install'){
+            when {
+                expression { return env.GIT_BRANCH == 'origin/dev' && env.CHANGE_ID != null}
+            }
             steps{
                 sh 'chmod +x mvnw'
                 sh './mvnw clean install -Dspring.profiles.active=$SPRING_PROFILE'
             }
+
         }
         stage('Docker build and push') {
             when {
@@ -44,5 +48,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
