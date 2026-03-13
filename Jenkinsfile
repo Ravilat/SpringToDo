@@ -5,6 +5,11 @@ pipeline {
         SPRING_PROFILE = "spring"
     }
     stages {
+        stage('github sign in'){
+            steps{
+                git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
+            }
+        }
         stage('Maven install'){
             steps{
                 sh 'maven clean install -Dspring.profiles.active=$SPRING_PROFILE'
@@ -21,9 +26,6 @@ pipeline {
                      sh 'docker push $DOCKER_IMAGE:1.1'
                 }
             }
-        }
-        stage(''){
-
         }
     }
 }
