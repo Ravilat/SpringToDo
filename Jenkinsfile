@@ -29,7 +29,11 @@ pipeline {
         }
         stage('Docker build and push') {
             when {
-                branch 'origin/master'
+                   expression { return env.GIT_BRANCH == 'origin/master' }
+//                 anyOf {
+//                         branch 'master'
+//                         expression { return env.BRANCH_NAME == 'master' || env.GIT_BRANCH == 'origin/master' }
+//                     }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_PASSWORD', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USERNAME')]) {
