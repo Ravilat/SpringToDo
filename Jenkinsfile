@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    triggers {
+            githubPush()
+    }
     environment{
         DOCKER_IMAGE = "faritych8/SpringToDO"
         SPRING_PROFILE = "spring"
