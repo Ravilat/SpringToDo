@@ -8,6 +8,7 @@ pipeline {
         IMAGE_TAG = "1.1"
         SPRING_PROFILE = "spring"
         TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
+//         PR
     }
     stages {
         stage('Debug Info') {
