@@ -10,20 +10,20 @@ pipeline {
         TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
     }
     stages {
-        stage('Debug Info') {
-            steps {
-                sh 'env'
-                echo "Текущая ветка из Git: ${env.GIT_BRANCH}"
-                echo "Имя ветки или PR: ${env.BRANCH_NAME}"
-                echo "Это PR? : ${env.CHANGE_ID ? 'Да, номер ' + env.CHANGE_ID : 'Нет'}"
-                echo "Целевая ветка PR (куда льем): ${env.CHANGE_TARGET ?: 'N/A'}"
-            }
-        }
-        stage('Github sign in'){
-                steps{
-                    git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
-                }
-        }
+//         stage('Debug Info') {
+//             steps {
+//                 sh 'env'
+//                 echo "Текущая ветка из Git: ${env.GIT_BRANCH}"
+//                 echo "Имя ветки или PR: ${env.BRANCH_NAME}"
+//                 echo "Это PR? : ${env.CHANGE_ID ? 'Да, номер ' + env.CHANGE_ID : 'Нет'}"
+//                 echo "Целевая ветка PR (куда льем): ${env.CHANGE_TARGET ?: 'N/A'}"
+//             }
+//         }
+//         stage('Github sign in'){
+//                 steps{
+//                     git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
+//                 }
+//         }
         stage('Maven install') {
             when {
                 expression {
