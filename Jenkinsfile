@@ -19,14 +19,16 @@ pipeline {
                 echo "Целевая ветка PR (куда льем): ${env.CHANGE_TARGET ?: 'N/A'}"
             }
         }
-        stage('github sign in'){
-            steps{
-                git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
-            }
+        stage('Github sign in'){
+                steps{
+                    git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
+                }
         }
         stage('Maven install') {
-            expression {
+            when {
+                expression {
                         return env.CHANGE_ID != null && env.CHANGE_TARGET == 'dev'
+                }
             }
             steps{
                 echo "Maven test and install"
