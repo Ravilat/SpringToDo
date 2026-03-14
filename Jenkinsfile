@@ -24,7 +24,7 @@ pipeline {
                 git credentialsId: 'GitHub', url: 'git@github.com:Ravilat/SpringToDo.git'
             }
         }
-        stage('Maven install'){
+        stage('Maven install') {
             expression {
                         return env.CHANGE_ID != null && env.CHANGE_TARGET == 'dev'
             }
